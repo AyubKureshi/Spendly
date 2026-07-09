@@ -17,7 +17,7 @@
         </p>
         <div class="hero-actions">
             <a href="{{ url_for('register') }}" class="btn-primary">Create free account</a>
-            <a href="#how" class="btn-primary">See how it works</a>
+            <a href="#how" class="btn-primary" data-modal-open="how">See how it works</a>
         </div>
     </div>
     <div class="hero-visual">
@@ -93,5 +93,72 @@
         <a href="{{ url_for('register') }}" class="btn-primary">Create free account</a>
     </div>
 </section>
+
+<div class="modal-backdrop" id="modal-how" data-modal hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-how-title">
+        <button class="modal-close" type="button" data-modal-close aria-label="Close">×</button>
+        <h2 class="modal-title" id="modal-how-title">See how Spendly works</h2>
+        <div class="modal-video">
+            <iframe
+                id="modal-how-video"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                title="Spendly demo video"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    function openModal(id) {
+        var el = document.getElementById('modal-' + id);
+        if (!el) return;
+        el.removeAttribute('hidden');
+        document.body.classList.add('modal-open');
+        var closeBtn = el.querySelector('[data-modal-close]');
+        if (closeBtn) closeBtn.focus();
+    }
+
+    function closeModal(el) {
+        if (!el || el.hasAttribute('hidden')) return;
+        el.setAttribute('hidden', '');
+        document.body.classList.remove('modal-open');
+        // Stop the video by clearing the iframe src.
+        var iframe = el.querySelector('iframe');
+        if (iframe) {
+            var src = iframe.getAttribute('src');
+            iframe.setAttribute('src', '');
+            iframe.setAttribute('src', src);
+        }
+    }
+
+    document.addEventListener('click', function (e) {
+        var opener = e.target.closest('[data-modal-open]');
+        if (opener) {
+            e.preventDefault();
+            openModal(opener.getAttribute('data-modal-open'));
+            return;
+        }
+        var closer = e.target.closest('[data-modal-close]');
+        if (closer) {
+            e.preventDefault();
+            closeModal(closer.closest('[data-modal]'));
+            return;
+        }
+        if (e.target.classList && e.target.classList.contains('modal-backdrop')) {
+            closeModal(e.target);
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            var open = document.querySelector('.modal-backdrop:not([hidden])');
+            if (open) closeModal(open);
+        }
+    });
+})();
+</script>
 
 {% endblock %}
