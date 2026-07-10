@@ -1,6 +1,14 @@
 from flask import Flask, render_template
 
+from database.db import init_db, seed_db
+
 app = Flask(__name__)
+
+
+# Initialize the database schema and seed demo data before the first request.
+with app.app_context():
+    init_db()
+    seed_db()
 
 
 # ------------------------------------------------------------------ #
