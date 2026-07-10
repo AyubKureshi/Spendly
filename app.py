@@ -1,8 +1,17 @@
-from flask import Flask, render_template
+import os
+import sqlite3
 
-from database.db import init_db, seed_db
+from flask import Flask, redirect, render_template, request, session, url_for
+from werkzeug.security import generate_password_hash
+
+from database.db import get_db, init_db, seed_db
 
 app = Flask(__name__)
+
+
+# Dev-safe session signing key. Replace via env var before any production
+# deployment — a hardcoded key here is acceptable for local development only.
+app.secret_key = os.environ.get("SPENDLY_SECRET_KEY", "dev-only-change-me")
 
 
 # Initialize the database schema and seed demo data before the first request.
@@ -20,9 +29,68 @@ def landing():
     return render_template("landing.html")
 
 
-@app.route("/register")
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    return render_template("register.html")
+    if request.method == "GET":
+        return render_template("register.html")
+
+    # POST: read and trim form values.
+    name = (request.form.get("name") or "").strip()
+    email = (request.form.get("email") or "").strip()
+    password = request.form.get("password") or ""
+
+    # Validate. Any failure -> re-render with 400, preserving name/email.
+    if not name:
+        return render_template(
+            "register.html", error="Name is required.", name=name, email=email
+        ), 400
+    if len(name) > 80:
+        return render_template(
+            "register.html",
+            error="Name must be 80 characters or fewer.",
+            name=name,
+            email=email,
+        ), 400
+    if not email or "@" not in email or "." not in email or len(email) > 120:
+        return render_template(
+            "register.html",
+            error="Please enter a valid email address.",
+            name=name,
+            email=email,
+        ), 400
+    if len(password) < 8:
+        return render_template(
+            "register.html",
+            error="Password must be at least 8 characters.",
+            name=name,
+            email=email,
+        ), 400
+
+    # Hash the password and insert. Catch UNIQUE(email) to surface a clean error.
+    password_hash = generate_password_hash(password)
+    conn = get_db()
+    try:
+        try:
+            cursor = conn.execute(
+                "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+                (name, email, password_hash),
+            )
+            conn.commit()
+            user_id = cursor.lastrowid
+        except sqlite3.IntegrityError:
+            return render_template(
+                "register.html",
+                error="Email already registered",
+                name=name,
+                email=email,
+            ), 400
+    finally:
+        conn.close()
+
+    # Start the session and redirect to the (placeholder) profile page.
+    session["user_id"] = user_id
+    session["user_name"] = name
+    return redirect(url_for("profile"))
 
 
 @app.route("/login")
