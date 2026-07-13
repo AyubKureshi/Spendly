@@ -207,6 +207,18 @@ def profile():
             "FROM expenses WHERE user_id = ? AND date >= ?",
             (session["user_id"], month_start),
         ).fetchone()
+
+        # Get all transactions for the user, ordered by date descending
+        transactions = conn.execute(
+            "SELECT id, amount, category, date, description FROM expenses WHERE user_id = ? ORDER BY date DESC",
+            (session["user_id"],),
+        ).fetchall()
+
+        # Get category-wise totals
+        category_totals = conn.execute(
+            "SELECT category, SUM(amount) as total FROM expenses WHERE user_id = ? GROUP BY category",
+            (session["user_id"],),
+        ).fetchall()
     finally:
         conn.close()
 
@@ -218,6 +230,8 @@ def profile():
         expense_count=stats["n"],
         member_since=_pretty_date(user["created_at"]),
         now_month=datetime.now().strftime("%B"),
+        transactions=transactions,
+        category_totals=category_totals,
     )
 
 

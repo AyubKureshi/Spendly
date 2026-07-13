@@ -786,6 +786,52 @@ body.modal-open { overflow: hidden; }
 }
 
 /* ------------------------------------------------------------------ */
+/* Profile page extensions                                             */
+/* ------------------------------------------------------------------ */
+
+.section-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+    margin-top: 2rem;
+}
+
+.category-table,
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.category-table th,
+.category-table td,
+.transaction-table th,
+.transaction-table td {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.category-table th,
+.transaction-table th {
+    background-color: var(--paper-warm);
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.category-table tbody tr:nth-child(even),
+.transaction-table tbody tr:nth-child(even) {
+    background-color: var(--paper);
+}
+
+.category-table tbody tr:hover,
+.transaction-table tbody tr:hover {
+    background-color: var(--border-soft);
+}
+
+/* ------------------------------------------------------------------ */
 /* Responsive                                                          */
 /* ------------------------------------------------------------------ */
 
