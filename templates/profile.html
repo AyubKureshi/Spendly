@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Your profile — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="profile-section">
+    <div class="profile-header">
+        <div class="profile-header-text">
+            <h1 class="profile-title">Hi, {{ user["name"] }}</h1>
+            <p class="profile-subtitle">Here's a quick look at your Spendly account.</p>
+        </div>
+        <a href="{{ url_for('add_expense') }}" class="btn-primary profile-cta">+ Add an expense</a>
+    </div>
+
+    <div class="mock-stats profile-stats">
+        <div class="mock-stat">
+            <div class="mock-stat-label">This month</div>
+            <div class="mock-stat-value">{{ month_total }}</div>
+            <div class="mock-stat-meta muted">since 1 {{ now_month }}</div>
+        </div>
+        <div class="mock-stat">
+            <div class="mock-stat-label">All time</div>
+            <div class="mock-stat-value">{{ all_time_total }}</div>
+            <div class="mock-stat-meta muted">across all months</div>
+        </div>
+        <div class="mock-stat">
+            <div class="mock-stat-label">Expenses</div>
+            <div class="mock-stat-value">{{ expense_count }}</div>
+            <div class="mock-stat-meta muted">logged so far</div>
+        </div>
+    </div>
+
+    <div class="profile-account-card">
+        <div class="profile-account-name">{{ user["name"] }}</div>
+        <div class="profile-account-email">{{ user["email"] }}</div>
+        <div class="profile-account-since">Member since {{ member_since }}</div>
+    </div>
+
+    {% if expense_count == 0 %}
+        <p class="profile-empty">No expenses yet — add your first one to see stats here.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

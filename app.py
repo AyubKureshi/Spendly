@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from datetime import datetime
 
 from flask import Flask, redirect, render_template, request, session, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -12,6 +13,23 @@ app = Flask(__name__)
 # Dev-safe session signing key. Replace via env var before any production
 # deployment — a hardcoded key here is acceptable for local development only.
 app.secret_key = os.environ.get("SPENDLY_SECRET_KEY", "dev-only-change-me")
+
+
+def _inr(value):
+    """Format a number as ₹<value> with thousands separators (e.g. 5898 -> ₹5,898)."""
+    return f"₹{value:,.0f}"
+
+
+def _pretty_date(iso_text):
+    """Render an ISO 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DD' string as '13 July 2026'.
+
+    Uses lstrip('0') to drop the leading zero on the day of the month, so the
+    output works on both POSIX (`%-d`) and Windows (`%#d` / `%d`).
+    """
+    date_part = iso_text.split(" ")[0]
+    dt = datetime.strptime(date_part, "%Y-%m-%d")
+    day = dt.strftime("%d").lstrip("0")
+    return f"{day} {dt.strftime('%B %Y')}"
 
 
 # Initialize the database schema and seed demo data before the first request.
@@ -158,7 +176,49 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    # Logged-out users get bounced to /login so the page content never leaks.
+    if session.get("user_id") is None:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+    try:
+        # Defensive column list: never select password_hash.
+        user = conn.execute(
+            "SELECT id, name, email, created_at FROM users WHERE id = ?",
+            (session["user_id"],),
+        ).fetchone()
+
+        # Stale session (user row was deleted): clear it and bounce to landing.
+        if user is None:
+            session.clear()
+            return redirect(url_for("logout"))
+
+        # All-time count and total in a single round trip.
+        stats = conn.execute(
+            "SELECT COUNT(*) AS n, COALESCE(SUM(amount), 0) AS total "
+            "FROM expenses WHERE user_id = ?",
+            (session["user_id"],),
+        ).fetchone()
+
+        # "This month" = current calendar month; ISO strings sort lexicographically.
+        month_start = datetime.now().strftime("%Y-%m-01")
+        month_total_row = conn.execute(
+            "SELECT COALESCE(SUM(amount), 0) AS month_total "
+            "FROM expenses WHERE user_id = ? AND date >= ?",
+            (session["user_id"], month_start),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    return render_template(
+        "profile.html",
+        user=user,
+        month_total=_inr(month_total_row["month_total"]),
+        all_time_total=_inr(stats["total"]),
+        expense_count=stats["n"],
+        member_since=_pretty_date(user["created_at"]),
+        now_month=datetime.now().strftime("%B"),
+    )
 
 
 @app.route("/expenses/add")
