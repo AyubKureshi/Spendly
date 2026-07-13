@@ -712,6 +712,80 @@ body.modal-open { overflow: hidden; }
 }
 
 /* ------------------------------------------------------------------ */
+/* Profile page                                                        */
+/* ------------------------------------------------------------------ */
+
+.profile-section {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 4rem 2rem 5rem;
+}
+
+.profile-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.profile-header-text { max-width: 640px; }
+
+.profile-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+}
+
+.profile-subtitle {
+    font-size: 1rem;
+    color: var(--ink-muted);
+}
+
+.profile-cta { white-space: nowrap; }
+
+.profile-stats { margin-bottom: 2.5rem; }
+
+.profile-account-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.75rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.profile-account-name {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--ink);
+    line-height: 1.2;
+}
+
+.profile-account-email {
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+}
+
+.profile-account-since {
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    margin-top: 0.25rem;
+}
+
+.profile-empty {
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    text-align: center;
+}
+
+/* ------------------------------------------------------------------ */
 /* Responsive                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -731,4 +805,6 @@ body.modal-open { overflow: hidden; }
 @media (max-width: 600px) {
     .nav-links a:not(.nav-cta) { display: none; }
     .hero { padding: 3rem 1rem 2rem; }
+    .profile-header { flex-direction: column; align-items: stretch; }
+    .profile-cta { width: 100%; text-align: center; }
 }
